@@ -1,0 +1,529 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/moon.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<style type="text/css">
+			/* Theme overrides */
+			.reveal section img {
+				background: transparent;
+				border: 0;
+				box-shadow: none;
+				margin: 0;
+			}
+
+			.reveal h1 {
+				font-size: 2.7em;
+			}
+
+			.reveal li {
+				margin-bottom: 0.3em;
+			}
+
+			.reveal ul {
+				text-align: left;
+				padding-left: 2em;
+				width: 90%
+			}
+
+			.reveal section p.left {
+				padding-left: 2em;
+				text-align: left;
+			}
+
+			.reveal h3 em {
+				font-style: normal;
+				color: #cc9393;
+			}
+
+			.reveal code strong {
+				color: #bb80b3;
+			}
+
+			.reveal .slide-background::after {
+				content: ' ';
+				display: block;
+				position: absolute;
+				bottom: 10px;
+				left: 20px;
+				width: 160px;
+				height: 110px;
+				z-index: -1;
+				background-image: url("img/zenika_logo.png");
+				background-size: 160px 38px;
+				background-repeat: no-repeat;
+				background-position: center;
+				opacity: 0.3;
+			}
+
+			/* Specific presentation elements */
+			.title-slide .title-logos img {
+				display: inline-block;
+				width: 10%;
+				height: 10%;
+			}
+
+			.zenika_logo {
+				width: 60%;
+			}
+
+			.employer .fragment {
+				display: inline-block;
+			}
+
+			table.classification {
+				/*width: 100%;*/
+				min-width: 50%;
+			}
+
+			table.classification th {
+				font-weight: bold;
+				border: 0;
+			}
+
+			table.classification td {
+				border: 0;
+				line-height: 400%;
+			}
+
+			.classification .pull, .classification .push {
+				font-weight: bold;
+			}
+
+			.classification .function, .classification .promise, .classification .singular, .classification .pull, .classification .push {
+				text-align: right;
+			}
+			.classification .function, .classification .promise, .classification .singular {
+				padding: 0 1.8em;
+				border-right: 0.2em solid;
+				/*width: 20%;*/
+			}
+			.classification .iterator, .classification .observable, .classification .plural {
+				padding-left: 1.8em;
+			}
+			.classification tbody tr:last-child {
+				border-top: 0.2em solid;
+			}
+
+			.observable span {
+				color: #cc9393;
+				font-weight: bolder;
+			}
+		</style>
+
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<section class="title-slide">
+						<h1 class="main_title">La Programmation Réactive Et CycleJS</h1>
+						<p class="title-logos"><img src="img/rxjs_logo.svg" alt="RxJS"> <img src="img/cyclejs_logo.svg" alt="CycleJS"></p>
+						<p class="author">Benoit Averty <span class="author_twitter">&mdash; <a href="http://twitter.com/@Kaidjin">@Kaidjin</a></span></p>
+						<p class="employer"><img src="img/zenika_logo.png" alt="zenika" class="zenika_logo">
+
+						<aside class="notes" data-markdown>
+							* Benoit Averty
+							* Développeur chez Zenika
+							* Aime explorer les nouveaux paradigmes, en particulier programmation fonctionnelle et plus récemment réactive.
+						</aside>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h1>Quelques rappels théoriques</h1>
+						<p class="subtitle">Promis, pas trop</p>
+
+						<aside class="notes" data-markdown>
+							* Pas seulement le dernier buzz-word à la mode
+							* Continuation logique de l'évolution de javascript
+						</aside>
+					</section>
+					<section>
+						<table class="classification">
+							<thead><tr>
+								<th>&nbsp;</th>
+								<th class="singular"><span class="fragment" data-fragment-index="2">Singulier</span></th>
+								<th class="plural"><span class="fragment" data-fragment-index="2">Pluriel</span></th>
+							</tr></thead>
+							<tbody><tr>
+								<td class="pull"><span class="fragment" data-fragment-index="4">Pull / Spatial : </span></td>
+								<td class="function"><span class="fragment" data-fragment-index="1">Fonction</span></td>
+								<td class="iterator"><span class="fragment" data-fragment-index="3">Itérateur</span></td>
+							</tr>
+							<tr>
+								<td class="push"><span class="fragment" data-fragment-index="4">Push / Temporel : </span></td>
+								<td class="promise"><span class="fragment" data-fragment-index="5">Promise</span></td>
+								<td class="observable"><span class="fragment" data-fragment-index="6">Observable</span></td>
+							</tr></tbody>
+						</table>
+
+						<aside class="notes" data-markdown>
+							* Case manquante : observable
+							* Caractéristiques des itérateurs : plusieurs valeurs
+							* Caractéristique des promises : mode push
+						</aside>
+					</section>
+
+					<section>
+						<pre><code class="javascript" data-noescape>
+myObservable.<strong>subscribe</strong>(
+	data => {
+		if (data >= 42) {
+			const modifiedData = data / 2
+			doSomethingWith(modifiedData)
+		}
+	}
+)
+
+<span class="fragment">// Ou dans un style plus fonctionnel :
+myObservable
+	.<strong>filter</strong>(data => data >= 42)
+	.<strong>map</strong>(data => data / 2)
+	.subscribe(doSomethingWith)</span>
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* ~ promesse (subscribe au lieu de then) = mode push
+							* ~ itérateur (style fonctionnel, filter, map, reduce...) = suite de valeurs
+						</aside>
+					</section>
+					<section>
+						<h3>Programmation Réactive Fonctionelle =<br>
+							<em>Design pattern Observer</em> en tant que paradigme</h3>
+
+						<p style="font-weight: bold"><span class="fragment">...Et RxJS (ou autre) pour se simplifier la vie</span></p>
+
+						<aside class="notes" data-markdown>
+								* Évenements propagés par une source
+								* En mode push
+								* On définit uniquement le comportement, la &laquo; réaction &raquo;
+						</aside>
+					</section>
+				</section>
+				<section>
+					<section>
+						<h1><img src="img/rxjs_logo.svg" style="height: 1em" /> RxJS</h1>
+					</section>
+					<section>
+						<h3>Des Observables : </h3>
+						<pre><code class="javascript" data-noescape>
+const observable1 = Rx.Observable<strong>.from</strong>([1, 2, 3, 4]);
+<span class="fragment">const observable2 = Rx.Observable<strong>.interval</strong>(1000);</span>
+
+<span class="fragment">const observable3 = Rx.Observable<strong>.create</strong>(<strong>observer</strong> => {
+	fetch("https://jsonplaceholder.typicode.org/posts/1")
+		.then(resp => resp.json())
+		.then(body => {
+			<strong>observer.next(body)
+			observer.complete()</strong>
+		)
+		.catch(err => observer.error(err))
+});
+						</span></code></pre>
+
+						<aside class="notes" data-markdown>
+							* Observable : Objet central en Rx
+							* Création à partir d'array (ou autre : valeur, promesse...)
+							* évenements à intervalle réguliers
+							* Création "Custom" : codage de l'émission d'évènements
+						</aside>
+					</section>
+					<section>
+						<h3>Des Observateurs</h3>
+						<pre><code class="javascript" data-noescape style="width: 101%">
+const observable = ...
+observable.subscribe(<span class="fragment"><strong>{
+	next</strong>: x => console.log(`Observable sent a value: ${x}`),
+	<strong>error</strong>: err => console.error(`Observable sent an error: ${err}`),
+	<strong>complete</strong>: () => console.log('Observable is complete')
+<strong>}</strong></span>);
+						</code></pre>
+
+						<aside class="notes" data-markdown>
+							* Observer = comportement, réaction
+							* Trois callbacks : donnée, erreur, notification de fin
+							* Donné en paramètre à "subscribe()"
+						</aside>
+					</section>
+
+					<section>
+						<h3>Des Opérateurs</h3>
+
+						<p>Transformer, combiner, manipuler des observables (mais toujours de manière immutable)</p>
+					</section>
+
+					<section>
+						<pre><code class="javascript" data-noescape>
+const modifiedObservable = myObservable
+	.<strong>filter</strong>(x => x > 10)
+						</code></pre>
+
+						<iframe width="90%" height="400px" src="marbles-filter.html"></iframe>
+
+						<aside class="notes" data-markdown>
+							* Opérateurs à première vue familiers
+							* Marble diagrams
+							* Exemple: filter
+						</aside>
+					</section>
+					<section>
+						<pre><code class="javascript" data-noescape>
+const modifiedObservable = myObservable
+	.<strong>map</strong>(x => x * 10)
+						</code></pre>
+						<iframe width="90%" height="400px" src="marbles-map.html"></iframe>
+
+						<aside class="notes" data-markdown>
+							* Map = Array Map
+							* Valeurs transformées, chronologie inchangée
+						</aside>
+					</section>
+					<section>
+						<pre><code class="javascript" data-noescape>
+const modifiedObservable = Rx.Observable.<strong>merge</strong>(
+	observable1,
+	observable2
+)
+						</code></pre>
+						<iframe width="90%" height="400px" src="marbles-merge.html"></iframe>
+
+						<aside class="notes" data-markdown>
+							* Opérateurs plus spécifiques
+							* n'ont pas de sens sans la notion de temps
+							* merge() => utilise chronologie pour fusionner
+						</aside>
+					</section>
+					<section>
+						<pre><code class="javascript" data-noescape>
+const modifiedObservable = myObservable
+	.<strong>delay</strong>(1000)
+						</code></pre>
+						<iframe width="90%" height="400px" src="marbles-delay.html"></iframe>
+
+						<aside class="notes" data-markdown>
+							* Certains opérateurs : manipulent la chronologie des observables
+							* Delay est le plus simple : retarde les évènements
+							* cas d'usage : délai d'annulation
+						</aside>
+					</section>
+					<section>
+						<pre><code class="javascript" data-noescape>
+const modifiedObservable = myObservable
+	.<strong>debounce</strong>(1000)
+						</code></pre>
+						<iframe width="90%" height="400px" src="marbles-debounce.html"></iframe>
+
+						<aside class="notes" data-markdown>
+							* plus complexe : debounce
+							* N'émet un évènement qu'après une période de "silence"
+							* Cas d'usage : limitation de http
+						</aside>
+					</section>
+					<section>
+						<h3>Un lot de prise de tête !</h3>
+						<ul>
+							<li>Pourquoi mon observable ne fait rien ? mode Lazy ?</li>
+							<li>Mes requêtes HTTP sont exécutées deux fois !</li>
+							<li>Hot vs Cold</li>
+							<li>Synchrone ou asynchrone ?</li>
+							<li>C'est quoi l'opérateur pour faire ça ?</li>
+						</ul>
+
+						<aside class="notes" data-markdown>
+							* Questions classiques avec RxJS
+							* Réponses sans explications
+							* magiques (opérateur share/multicast)
+							* informations contradictoires (synchrone / asynchrone)
+						</aside>
+					</section>
+					<section>
+						<h3>Revenons à la base !</h3>
+						<p>Anatomie d'un observable</p>
+
+						<aside class="notes" data-markdown>
+							* Meilleur moyen de répondre : coder son propre observable
+							* Aucune magie
+						</aside>
+					</section>
+					<section>
+						<ul>
+							<li>Pourquoi mon observable ne fait rien ? mode lazy ?</li>
+						</ul>
+
+						<p class="left">Il faut l'appeler (<em>subscribe</em>)
+							pour qu'il se passe quoi que ce soit.</p>
+					</section>
+					<section>
+						<ul>
+							<li>Mes requêtes HTTP sont exécutées deux fois !</li>
+						</ul>
+
+						<p class="left">Il y a probablement deux appels à l'observable (subscribe)</p>
+					</section>
+					<section>
+						<ul>
+							<li>Hot vs Cold</li>
+						</ul>
+
+						<p class="left">Cold : L'observable crée la source de données à chaque appel (subscribe)</p>
+						<p class="left">Hot : L'observable utilise une source de données existante</p>
+					</section>
+					<section>
+						<ul>
+							<li>Synchrone ou Asynchrone ?</li>
+						</ul>
+
+						<p class="left">Ni l'un ni l'autre : c'est juste une fonction!</p>
+					</section>
+					<section>
+						<p>Et pour les opérateurs, pas de secret : http://reactivex.io/rxjs</p>
+						<img src="img/list_operators.gif" />
+
+						<aside class="notes" data-markdown>
+							* Opérateurs : lire doc (seule solution)
+							* Très bien faite, avec "wizard" pour trouver un opérateur
+						</aside>
+					</section>
+					<section>
+						<p class=left>Programmation réactive <em>fonctionnelle</em>.</p>
+						<ul>
+							<li class="fragment">Immutabilité</li>
+							<li class="fragment">Fonctions pures (sans <em>side-effects</em>)</li>
+							<li class="fragment">Pure Data Flow (Manipulation de données &laquo; En sens unique &raquo;)</li>
+						</ul>
+
+						<aside class="notes" data-markdown>
+							* Mots clés souvent associés à la prog réactive
+							* Immutabilité : Bonne pratique de ne pas modifier les données
+							* Pure fonctions : Opérateurs sont des pure fonctions
+							* Data flow : Données circulent dans un sens Observable => Opérateurs => Subscription
+						</aside>
+					</section>
+					<section>
+						<p class="left">Manipuler des données c'est bien, Mais le web c'est aussi&nbsp;: </p>
+						<ul>
+							<li>Réagir à des clics</li>
+							<li>intéragir avec le DOM</li>
+							<li>Faire des requêtes HTTP</li>
+							<li>...</li>
+						</ul>
+					</section>
+					<section>
+						Comment on fait une appli avec seulement du code &laquo;&nbsp;fonctionnel&nbsp;&raquo; ?
+
+						<aside class="notes" data-markdown>
+							* Question courante : Comment faire IO en fonctionnel ?
+							* Monade = Notion compliquée (tonnes d'articles)
+						</aside>
+					</section>
+				</section>
+				<section>
+					<section>
+						<div class="cycle-title" style="position: relative;">
+							<img src="img/cyclejs_logo.svg" alt="CycleJS" style="width: 7em; display: inline-block; vertical-align: bottom; background: transparent; border: 0" />
+							<h3 style="display: inline-block; font-size: 4em">Cycle.js</h3>
+						</div>
+						<p style="clear: both;">A functional and reactive JavaScript framework for cleaner code</p>
+					</section>
+					<section>
+						<p class="left">CycleJS se charge :</p>
+						<ul>
+							<li>De créer les observables en entrée de l'application (&laquo;&nbsp;sources &raquo;)</li>
+							<li>De gérer les effets secondaires à partir d'observables en sortie de l'application (&laquo; sinks &raquo;)</li>
+						</ul>
+						<p>L'application est purement réactive, fonctionelle, déclarative</p>
+
+						<aside class="notes" data-markdown>
+							* Idée de base : Séparation des IO de la manipulation des données / évènements
+							* Bonne pratique avec Rx
+							* Déplpacés dans Cycle
+						</aside>
+					</section>
+					<section>
+						<h3>Drivers</h3>
+						<ul>
+							<li>Génèrent les Observables &laquo; Sources &raquo; à partir de &laquo;&nbsp;Read Effects &raquo; : Clics, retours HTTP, ...</li>
+							<li>Produisent des &laquo; Write Effects &raquo; à partir des Observables &laquo; Sinks &raquo; : changement de structure du DOM, requêtes HTTP...</li>
+						</ul>
+
+						<aside class="notes" data-markdown>
+							* sources : contiennent clics, retours http, ...
+							* sinks : Requêtes HTTP, description arbres DOM (html)
+						</aside>
+					</section>
+					<section>
+						<img src="img/cycle-diagram.png" style="width: 70%;" alt="cycle-diagram">
+
+						<aside class="notes" data-markdown>
+							* Haut : l'application (manipulation d'observables)
+							* bas : Drivers (IO, Side effects)
+							* Le framework forme un cycle entre ces deux éléments
+						</aside>
+					</section>
+					<section>
+						<p class="left">Drivers inclus : </p>
+						<ul>
+							<li>DOM (y compris les évènements)</li>
+							<li>HTTP</li>
+						</ul>
+						<p class="left">Drivers Communautaires : </p>
+						<ul>
+							<li>React Native</li>
+							<li>SocketIO</li>
+							<li>Notifications</li>
+							<li>...</li>
+						</ul>
+					</section>
+					<section>
+						<p>Exemple: Compteur</p>
+						<iframe src="cycle-counter.html" width="100%"></iframe>
+					</section>
+					<section>
+						<iframe src="https://glebbahmutov.com/draw-cycle/" width="80%" height="550px"></iframe>
+						<p><a href="https://glebbahmutov.com/draw-cycle/">https://glebbahmutov.com/draw-cycle/</a></p>
+					</section>
+				</section>
+				<section>
+					<h1>Merci !</h1>
+				</section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
